@@ -1,26 +1,34 @@
 package com.example.heatdetection.ui.home;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.heatdetection.MyModel;
 import com.example.heatdetection.R;
+import com.example.heatdetection.SharedViewModel;
 import com.example.heatdetection.databinding.FragmentHomeBinding;
+import com.example.heatdetection.ui.gallery.GalleryFragment;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 
 public class HomeFragment extends Fragment {
 
@@ -30,7 +38,12 @@ public class HomeFragment extends Fragment {
     private int selectedAge;
     private int selectedGender;
     private float BMI;
+    //private float res;
+    TextView resultBox;
 
+    private Runnable refreshRunnable;
+    private Handler handler = new Handler();
+    private SharedViewModel sharedViewModel;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         HomeViewModel homeViewModel =
@@ -53,6 +66,14 @@ public class HomeFragment extends Fragment {
         Spinner WeightSpinner = view.findViewById(R.id.WeightSpinner);
         Spinner HeightSpinner = view.findViewById(R.id.HeightSpinner);
 
+        //Current Timer
+        /*long currentTimeMillis = System.currentTimeMillis();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = dateFormat.format(new Date(currentTimeMillis));
+        Toast.makeText(getContext(), "time"+ formattedDate, Toast.LENGTH_SHORT).show();*/
+
+
+
         Integer[] ages = new Integer[98];
         for (int i = 0; i < 98; i++) {
             ages[i] = 1 + i;
@@ -68,17 +89,17 @@ public class HomeFragment extends Fragment {
         adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         GenderSpinner.setAdapter(adapter1);
 
-        Integer[] Weight = new Integer[198];
-        for (int i = 0; i < 198; i++) {
+        Integer[] Weight = new Integer[351];
+        for (int i = 0; i < 350; i++) {
             Weight[i] = 50 + i;
         }
         ArrayAdapter<Integer> adapter2 = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, Weight);
         adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         WeightSpinner.setAdapter(adapter2);
 
-        Integer[] Height = new Integer[198];
-        for (int i = 0; i < 198; i++) {
-            Height[i] = 50 + i;
+        Integer[] Height = new Integer[62];
+        for (int i = 0; i < 61; i++) {
+            Height[i] = 36 + i;
         }
         ArrayAdapter<Integer> adapter3 = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, Height);
         adapter3.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -92,12 +113,15 @@ public class HomeFragment extends Fragment {
                 //Toast.makeText(getContext(), "Selected Age: " + selectedAge, Toast.LENGTH_SHORT).show();
             }
 
+
+
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // 当没有选中时执行的操作
+
             }
         });
-
+        sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+        sharedViewModel.setSelectedAge((float)selectedAge);
         GenderSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
             @Override
@@ -112,7 +136,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // 当没有选中时执行的操作
+
             }
         });
 
@@ -142,32 +166,15 @@ public class HomeFragment extends Fragment {
                  // 当没有选中时执行的操作
             }
         });
-        BMI = (float) selectedWeight * 703 / (selectedHeight * selectedHeight);
 
-        try {
-            MyModel myModel = new MyModel(requireContext());
 
-            float scaledBMI = BMI;
-            float scaledAge = selectedAge;
-            int scaledGender = selectedGender;
-
-            float[] result = myModel.runModel(scaledBMI, scaledAge, scaledGender);
-
-            TextView resultBox = view.findViewById(R.id.resultBox);
-
-            resultBox.setText("output:" + result[0]);
-            //resultBox.setText("output:" + Arrays.toString(result));
-
-            //Log.d("Model Output", "Prediction result: " + result[0]);
-            myModel.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
+
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        handler.removeCallbacks(refreshRunnable);
     }
 }

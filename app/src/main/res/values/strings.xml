@@ -7,9 +7,9 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
-    <string name="menu_home">Home</string>
+    <string name="menu_home">User Settings</string>
     <string name="menu_gallery">Weather</string>
-    <string name="menu_slideshow">History</string>
+    <string name="menu_slideshow">Heart Rate</string>
 
     <string name="Age_settings">Age:</string>
     <string name="Gender_settings">Gender:</string>
